@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:maps_app/blocs/blocs.dart';
 import 'package:maps_app/views/views.dart';
@@ -32,24 +33,41 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocBuilder<LocationBloc, LocationState>(
-        builder: (context, state) {
-          if (state.ultimaUbicacionConocida == null) {
+        builder: (context, locationState) {
+          if (locationState.ultimaUbicacionConocida == null) {
             return const Center(child: Text('Espere por favor...'));
           }
-          return SingleChildScrollView(
-            // para q aparezca bien el mapa
-            child: Stack(
-              children: [
-                MapView(initialLocation: state.ultimaUbicacionConocida!),
-              ],
-            ),
+          return BlocBuilder<MapBloc, MapState>(
+            builder: (context, mapState) {
+              // para desactivar visualmente el polyline
+              Map<String, Polyline> polylines = Map.from(mapState.polylines);
+              if (!mapState.mostrarRuta) {
+                polylines.removeWhere((key, value) => key == 'myRuta');
+              }
+
+              return SingleChildScrollView(
+                // para q aparezca bien el mapa
+                child: Stack(
+                  children: [
+                    MapView(
+                      initialLocation: locationState.ultimaUbicacionConocida!,
+                      polylines: polylines.values.toSet(),
+                    ),
+                  ],
+                ),
+              );
+            },
           );
         },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
-        children: const [BtnCurrentLocation()],
+        children: const [
+          BtnToggleRuta(),
+          BtnFollowUser(),
+          BtnCurrentLocation(),
+        ],
       ),
     );
   }

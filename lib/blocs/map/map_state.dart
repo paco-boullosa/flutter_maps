@@ -2,22 +2,32 @@ part of 'map_bloc.dart';
 
 class MapState extends Equatable {
   final bool isMapInicializado;
-  final bool seguirUsuario;
+  final bool estaSiguiendoUsuario;
+  final bool mostrarRuta;
 
-  const MapState({
-    this.isMapInicializado = false,
-    this.seguirUsuario = false,
-  });
+  // Polylines
+  final Map<String, Polyline> polylines;
 
-  MapState copyWith({
-    bool? isMapInicializado,
-    bool? seguirUsuario,
-  }) =>
+  const MapState(
+      {this.isMapInicializado = false,
+      this.estaSiguiendoUsuario = true,
+      this.mostrarRuta = true,
+      Map<String, Polyline>? polylines})
+      : polylines = polylines ?? const {};
+
+  MapState copyWith(
+          {bool? isMapInicializado,
+          bool? estaSiguiendoUsuario,
+          bool? mostrarRuta,
+          Map<String, Polyline>? polylines}) =>
       MapState(
         isMapInicializado: isMapInicializado ?? this.isMapInicializado,
-        seguirUsuario: seguirUsuario ?? this.seguirUsuario,
+        estaSiguiendoUsuario: estaSiguiendoUsuario ?? this.estaSiguiendoUsuario,
+        mostrarRuta: mostrarRuta ?? this.mostrarRuta,
+        polylines: polylines ?? this.polylines,
       );
 
   @override
-  List<Object> get props => [isMapInicializado, seguirUsuario];
+  List<Object> get props =>
+      [isMapInicializado, estaSiguiendoUsuario, mostrarRuta, polylines];
 }
