@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:maps_app/blocs/blocs.dart';
+import 'package:maps_app/models/models.dart';
 import 'package:maps_app/themes/themes.dart';
 
 part 'map_event.dart';
@@ -22,6 +23,9 @@ class MapBloc extends Bloc<MapEvent, MapState> {
 
   GoogleMapController? _mapController;
 
+  // mapCenter se usa para obtener las coordenadas del mapa cuando dejamos de moverlo
+  LatLng? mapCenter;
+
   // para poder liberar memoria y proceso
   StreamSubscription<LocationState>? suscripcionLocationState;
 
@@ -33,6 +37,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<UpdateUserPolylineEvent>(_onPolylineNewPoint);
     on<OnToggleRuta>(
         (event, emit) => emit(state.copyWith(mostrarRuta: !state.mostrarRuta)));
+    on<DibujarPolylineEvent>(
+        (event, emit) => emit(state.copyWith(polylines: event.polylines)));
 
     // hay que crear una suscripcion para escuchar los cambios en el location_bloc
     suscripcionLocationState = locationBloc.stream.listen((locationState) {
@@ -79,6 +85,21 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     currentPolylines['myRuta'] = myRuta;
 
     emit(state.copyWith(polylines: currentPolylines));
+  }
+
+  Future dibujarRoutePopyline(RouteDestination destination) async {
+    final myRuta = Polyline(
+      polylineId: const PolylineId('ruta'),
+      color: Colors.black,
+      width: 5,
+      points: destination.points,
+      startCap: Cap.roundCap,
+      endCap: Cap.roundCap,
+    );
+
+    final currentPolylines = Map<String, Polyline>.from(state.polylines);
+    currentPolylines['ruta'] = myRuta;
+    add(DibujarPolylineEvent(currentPolylines));
   }
 
   @override
