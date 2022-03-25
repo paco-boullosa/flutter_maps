@@ -30,6 +30,7 @@ class MapsApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Maps App',
       home: LoadingScreen(),
+      // home: TestMarkerScreen(),
     );
   }
 }

@@ -40,10 +40,21 @@ class TrafficService {
 
     final resp = await _dioPlaces.get(url, queryParameters: {
       'proximity': '${proximidad.longitude},${proximidad.latitude}',
+      'limit': 7,
     });
 
     final placesResponse = PlacesResponse.fromJson(resp.data);
 
     return placesResponse.features;
+  }
+
+  // obtener datos de la posicion del marcador (reverse geocoding)
+  Future<Feature> getInformacionPorCoors(LatLng coors) async {
+    final url = '$_basePlacesUrl/${coors.longitude},${coors.latitude}.json';
+    final resp = await _dioPlaces.get(url, queryParameters: {
+      'limit': 1,
+    });
+    final placesResponse = PlacesResponse.fromJson(resp.data);
+    return placesResponse.features[0]; // solo se devuelve la primera posicion
   }
 }

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:maps_app/blocs/blocs.dart';
+import 'package:maps_app/helpers/helpers.dart';
 import 'package:maps_app/models/models.dart';
 import 'package:maps_app/themes/themes.dart';
 
@@ -37,8 +38,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<UpdateUserPolylineEvent>(_onPolylineNewPoint);
     on<OnToggleRuta>(
         (event, emit) => emit(state.copyWith(mostrarRuta: !state.mostrarRuta)));
-    on<DibujarPolylineEvent>(
-        (event, emit) => emit(state.copyWith(polylines: event.polylines)));
+    on<DibujarPolylineEvent>((event, emit) =>
+        emit(state.copyWith(polylines: event.polylines, marcadores: event.marcadores)));
 
     // hay que crear una suscripcion para escuchar los cambios en el location_bloc
     suscripcionLocationState = locationBloc.stream.listen((locationState) {
@@ -87,7 +88,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     emit(state.copyWith(polylines: currentPolylines));
   }
 
-  Future dibujarRoutePopyline(RouteDestination destination) async {
+  Future dibujarRoutePolyline(RouteDestination destination) async {
     final myRuta = Polyline(
       polylineId: const PolylineId('ruta'),
       color: Colors.black,
@@ -96,10 +97,54 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       startCap: Cap.roundCap,
       endCap: Cap.roundCap,
     );
-
     final currentPolylines = Map<String, Polyline>.from(state.polylines);
     currentPolylines['ruta'] = myRuta;
-    add(DibujarPolylineEvent(currentPolylines));
+
+    // marcadores
+    // procesar info de salida y destino
+    // info inicio
+    double kms = destination.distance / 1000;
+    kms = (kms * 100).floorToDouble() / 100; // redondear
+    double duracionViaje = (destination.duration / 60).floorToDouble();
+    // custom markers
+    // final imgMarcadorInicio = await getNetworkImagenMarcador();
+    // final imgMarcadorFin = await getAssetImagenMarcador();
+
+    // ahora uso loe nuevos
+    final imgMarcadorInicio =
+        await getInicioCustomMarker(duracionViaje.toInt(), 'Mi ubicación');
+    final imgMarcadorFin =
+        await getEndCustomMarker(kms.toInt(), destination.infoDestino.text);
+
+    final marcadorInicial = Marker(
+      markerId: const MarkerId('inicio'),
+      anchor: const Offset(0.05, 0.9),
+      position: destination.points.first, // el primer marcador esta en el primer punto
+      icon: imgMarcadorInicio,
+      // infoWindow: InfoWindow(
+      //   title: 'Inicio',
+      //   snippet: 'Kms: $kms, Duración: $duracionViaje',
+      // ),
+    );
+    final marcadorFinal = Marker(
+      markerId: const MarkerId('fin'),
+      position: destination.points.last,
+      icon: imgMarcadorFin,
+      // anchor: const Offset(0, 0), //
+      // infoWindow: InfoWindow(
+      //   title: destination.infoDestino.text,
+      //   snippet: destination.infoDestino.placeName,
+      // ),
+    );
+    final currentMarcadores = Map<String, Marker>.from(state.marcadores);
+    currentMarcadores["inicio"] = marcadorInicial;
+    currentMarcadores["fin"] = marcadorFinal;
+
+    add(DibujarPolylineEvent(currentPolylines, currentMarcadores));
+
+    // despues de 0.3 seg se muestra el info window de inicio
+    // await Future.delayed(const Duration(milliseconds: 300));
+    // _mapController?.showMarkerInfoWindow(const MarkerId("inicio"));
   }
 
   @override

@@ -75,7 +75,7 @@ class _ManualMarkerBody extends StatelessWidget {
 
                     final destino =
                         await searchBloc.getCoordenadasInicioAFin(inicio, fin);
-                    await mapBloc.dibujarRoutePopyline(destino);
+                    await mapBloc.dibujarRoutePolyline(destino);
 
                     searchBloc.add(OnDectivateManualMarkerEvent()); // quitar barra
 

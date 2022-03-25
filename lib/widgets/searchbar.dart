@@ -33,7 +33,7 @@ class _SearchBarBody extends StatelessWidget {
       final mapBloc = BlocProvider.of<MapBloc>(context);
       final destino =
           await searchBloc.getCoordenadasInicioAFin(inicio!, result.posicion!);
-      await mapBloc.dibujarRoutePopyline(destino);
+      await mapBloc.dibujarRoutePolyline(destino);
     }
   }
 
