@@ -4,15 +4,22 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:maps_app/models/models.dart';
 import 'package:maps_app/services/services.dart';
 
+// NOTA
+// este servicio, ademas de las rutas (polylines) se encarga de las búsquedas de lugares (places)
+
 class TrafficService {
   // creamos 2 instancias de Dio (normal y trafico)
 
-  final Dio _dioTraffic; // rutas de trafico
+  final Dio _dioTraffic; // interceptor de trafico
+  final Dio _dioPlaces; // interceptor de places
 
   final String _baseTrafficUrl = 'https://api.mapbox.com/directions/v5/mapbox';
+  final String _basePlacesUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places';
 
   // instancia de la clase
-  TrafficService() : _dioTraffic = Dio()..interceptors.add(TrafficInterceptor());
+  TrafficService()
+      : _dioTraffic = Dio()..interceptors.add(TrafficInterceptor()),
+        _dioPlaces = Dio()..interceptors.add(PlacesInterceptor());
 
   Future getCoorsInicioAFin(LatLng inicio, LatLng fin) async {
     final coorStr =
@@ -24,5 +31,19 @@ class TrafficService {
     final data = TrafficResponse.fromMap(resp.data);
 
     return data;
+  }
+
+  Future<List<Feature>> getResultadosByQuery(LatLng proximidad, String query) async {
+    if (query.isEmpty) return [];
+
+    final url = '$_basePlacesUrl/$query.json';
+
+    final resp = await _dioPlaces.get(url, queryParameters: {
+      'proximity': '${proximidad.longitude},${proximidad.latitude}',
+    });
+
+    final placesResponse = PlacesResponse.fromJson(resp.data);
+
+    return placesResponse.features;
   }
 }

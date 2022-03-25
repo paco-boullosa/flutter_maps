@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-void ShowLoadingMessage(BuildContext context) {
+void showLoadingMessage(BuildContext context) {
   if (Platform.isAndroid) {
     showDialog(
       context: context,

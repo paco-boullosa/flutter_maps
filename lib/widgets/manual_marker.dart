@@ -71,7 +71,7 @@ class _ManualMarkerBody extends StatelessWidget {
                     final fin = mapBloc.mapCenter;
                     if (fin == null) return;
 
-                    ShowLoadingMessage(context);
+                    showLoadingMessage(context);
 
                     final destino =
                         await searchBloc.getCoordenadasInicioAFin(inicio, fin);
